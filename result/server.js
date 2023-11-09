@@ -6,10 +6,11 @@ var express = require('express'),
     server = require('http').Server(app),
     io = require('socket.io')(server);
 
+var path = require('path');  // Añadir esta línea para utilizar 'path'
+
 var port = process.env.PORT || 4000;
 
 io.on('connection', function (socket) {
-
   socket.emit('message', { text : 'Welcome!' });
 
   socket.on('subscribe', function (data) {
@@ -41,37 +42,41 @@ async.retry(
 );
 
 function getVotes(client) {
-  client.query('SELECT vote, COUNT(id) AS count FROM votes GROUP BY vote', [], function(err, result) {
+  client.query('SELECT distancia_manhattan, distancia_pearson FROM votes LIMIT 1', [], function(err, result) {
     if (err) {
       console.error("Error performing query: " + err);
     } else {
-      var votes = collectVotesFromResult(result);
-      io.sockets.emit("scores", JSON.stringify(votes));
+      var distances = collectDistancesFromResult(result);
+      io.sockets.emit("updateDistances", distances);
     }
 
     setTimeout(function() {getVotes(client) }, 1000);
   });
 }
 
-function collectVotesFromResult(result) {
-  var votes = {a: 0, b: 0};
-
-  result.rows.forEach(function (row) {
-    votes[row.vote] = parseInt(row.count);
-  });
-
-  return votes;
+function collectDistancesFromResult(result) {
+  if (result.rows.length > 0) {
+    var row = result.rows[0];
+    return {
+      distancia_manhattan: row.distancia_manhattan,
+      distancia_pearson: row.distancia_pearson
+    };
+  } else {
+    return {
+      distancia_manhattan: 0,
+      distancia_pearson: 0
+    };
+  }
 }
 
 app.use(cookieParser());
 app.use(express.urlencoded());
-app.use(express.static(__dirname + '/views'));
+app.use(express.static(path.join(__dirname, '/views')));  // Utilizar 'path'
 
 app.get('/', function (req, res) {
   res.sendFile(path.resolve(__dirname + '/views/index.html'));
 });
 
 server.listen(port, function () {
-  var port = server.address().port;
   console.log('App running on port ' + port);
 });
