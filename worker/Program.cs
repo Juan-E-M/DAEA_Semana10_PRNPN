@@ -98,7 +98,7 @@ namespace Worker
             command.CommandText = @"CREATE TABLE IF NOT EXISTS votes (
                                         id VARCHAR(255) NOT NULL UNIQUE,
                                         distancia_manhattan VARCHAR(255) NOT NULL,
-                                        distancia_pearson VARCHAR(255) NOT NULL,
+                                        distancia_pearson VARCHAR(255) NOT NULL
                                     )";
             command.ExecuteNonQuery();
 
