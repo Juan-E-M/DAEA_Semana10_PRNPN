@@ -23,4 +23,3 @@ app.controller('statsCtrl', function ($scope) {
     init();
   });
 });
-
