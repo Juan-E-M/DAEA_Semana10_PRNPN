@@ -59,37 +59,36 @@ def get_redis():
     return g.redis
     
 
+# @app.route("/", methods=['POST','GET'])
+# def hello():
+#     voter_id = request.cookies.get('voter_id')
+#     if not voter_id:
+#         voter_id = hex(random.getrandbits(64))[2:-1]
+
+#     vote = None
+
+#     if request.method == 'POST':
+#         redis = get_redis()
+#         vote = request.form['vote']
+#         app.logger.info('Received vote for %s', vote)
+#         data = json.dumps({'voter_id': voter_id, 'vote': vote})
+#         redis.rpush('votes', data)
+
+#     resp = make_response(render_template(
+#         'index.html',
+#         option_a=option_a,
+#         option_b=option_b,
+#         hostname=hostname,
+#         vote=vote,
+#     ))
+#     resp.set_cookie('voter_id', voter_id)
+#     return resp
+    
+    
 @app.route("/", methods=['POST','GET'])
-def hello():
-    voter_id = request.cookies.get('voter_id')
-    if not voter_id:
-        voter_id = hex(random.getrandbits(64))[2:-1]
-
-    vote = None
-
-    if request.method == 'POST':
-        redis = get_redis()
-        vote = request.form['vote']
-        app.logger.info('Received vote for %s', vote)
-        data = json.dumps({'voter_id': voter_id, 'vote': vote})
-        redis.rpush('votes', data)
-
-    resp = make_response(render_template(
-        'index.html',
-        option_a=option_a,
-        option_b=option_b,
-        hostname=hostname,
-        vote=vote,
-    ))
-    resp.set_cookie('voter_id', voter_id)
-    return resp
-    
-    
-@app.route("/distancias", methods=['POST','GET'])
 def distancias():
 
-    users = {"Angelica":{'Blues Traveler': 3.5, 'Broken Bells': 2.0, 'Norah Jones': 4.5, 'Phoenix': 5.0, 'Sligtly Stoopid': 1.5, 'The Strokes': 2.5, 'Vampire Weekend': 2.0},
-"Bill":{'Blues Traveler': 2.0, 'Broken Bells': 3.5, 'Deadmau5': 4.0, 'Phoenix': 2.0, 'Sligtly Stoopid': 3.5, 'Vampire Weekend': 3.0}}
+    users = {"Angelica":{'Blues Traveler': 3.5, 'Broken Bells': 2.0, 'Norah Jones': 4.5, 'Phoenix': 5.0, 'Sligtly Stoopid': 1.5, 'The Strokes': 2.5, 'Vampire Weekend': 2.0},"Bill":{'Blues Traveler': 2.0, 'Broken Bells': 3.5, 'Deadmau5': 4.0, 'Phoenix': 2.0, 'Sligtly Stoopid': 3.5, 'Vampire Weekend': 3.0}}
     
     distancia_pearson = pearson(users['Angelica'], users["Bill"])
     distancia_manhattan = manhattan(users['Angelica'], users["Bill"])
