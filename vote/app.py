@@ -5,6 +5,7 @@ import socket
 import random
 import json
 import logging
+from math import sqrt
 
 option_a = os.getenv('OPTION_A', "Manhatan")
 option_b = os.getenv('OPTION_B', "Pearson")
