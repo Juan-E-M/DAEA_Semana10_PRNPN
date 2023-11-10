@@ -6,13 +6,10 @@ var express = require('express'),
     server = require('http').Server(app),
     io = require('socket.io')(server);
 
-var path = require('path');  // Añadir esta línea para utilizar 'path'
-
 var port = process.env.PORT || 4000;
 
 io.on('connection', function (socket) {
-  socket.emit('message', { text : 'Welcome!' });
-
+  socket.emit('message', { text: 'Welcome!' });
   socket.on('subscribe', function (data) {
     socket.join(data.channel);
   });
@@ -23,60 +20,48 @@ var pool = new Pool({
 });
 
 async.retry(
-  {times: 1000, interval: 1000},
-  function(callback) {
-    pool.connect(function(err, client, done) {
+  { times: 1000, interval: 1000 },
+  function (callback) {
+    pool.connect(function (err, client, done) {
       if (err) {
         console.error("Waiting for db");
       }
       callback(err, client);
     });
   },
-  function(err, client) {
+  function (err, client) {
     if (err) {
       return console.error("Giving up");
     }
     console.log("Connected to db");
-    getVotes(client);
+    getDistances(client);
   }
 );
 
-function getVotes(client) {
-  client.query('SELECT distancia_manhattan, distancia_pearson FROM votes LIMIT 1', [], function(err, result) {
+function getDistances(client) {
+  client.query('SELECT id, distancia_manhattan, distancia_person FROM votes ORDER BY id DESC LIMIT 1', [], function (err, result) {
     if (err) {
       console.error("Error performing query: " + err);
     } else {
-      var distances = collectDistancesFromResult(result);
-      io.sockets.emit("updateDistances", distances);
+      var distances = result.rows[0] || { id: 0, distancia_manhattan: 0, distancia_person: 0 };
+      io.sockets.emit("distances", JSON.stringify(distances));
     }
 
-    setTimeout(function() {getVotes(client) }, 1000);
+    setTimeout(function () {
+      getDistances(client);
+    }, 1000);
   });
-}
-
-function collectDistancesFromResult(result) {
-  if (result.rows.length > 0) {
-    var row = result.rows[0];
-    return {
-      distancia_manhattan: row.distancia_manhattan,
-      distancia_pearson: row.distancia_pearson
-    };
-  } else {
-    return {
-      distancia_manhattan: 0,
-      distancia_pearson: 0
-    };
-  }
 }
 
 app.use(cookieParser());
 app.use(express.urlencoded());
-app.use(express.static(path.join(__dirname, '/views')));  // Utilizar 'path'
+app.use(express.static(__dirname + '/views'));
 
 app.get('/', function (req, res) {
   res.sendFile(path.resolve(__dirname + '/views/index.html'));
 });
 
 server.listen(port, function () {
+  var port = server.address().port;
   console.log('App running on port ' + port);
 });
