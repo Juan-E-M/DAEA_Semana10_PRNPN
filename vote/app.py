@@ -88,32 +88,21 @@ def get_redis():
     
 @app.route("/", methods=['POST','GET'])
 def distancias():
-
     users = {"Angelica":{'Blues Traveler': 3.5, 'Broken Bells': 2.0, 'Norah Jones': 4.5, 'Phoenix': 5.0, 'Sligtly Stoopid': 1.5, 'The Strokes': 2.5, 'Vampire Weekend': 2.0},"Bill":{'Blues Traveler': 2.0, 'Broken Bells': 3.5, 'Deadmau5': 4.0, 'Phoenix': 2.0, 'Sligtly Stoopid': 3.5, 'Vampire Weekend': 3.0}}
-    
     distancia_pearson = pearson(users['Angelica'], users["Bill"])
     distancia_manhattan = manhattan(users['Angelica'], users["Bill"])
-    
-    
     voter_id = request.cookies.get('voter_id')
     if not voter_id:
         voter_id = hex(random.getrandbits(64))[2:-1]
-
     vote = None
-
     if request.method == 'POST':
         redis = get_redis()
-        
-
         user_1 = request.form['option_a']
         user_2 = request.form['option_b']
-
         distancia_pearson = str(pearson(users[user_1], users[user_2]))
         distancia_manhattan = str(manhattan(users[user_1], users[user_2])) 
-
         data = json.dumps({'voter_id': voter_id,'distancia_manhattan': distancia_manhattan, 'distancia_pearson': distancia_pearson})
         redis.rpush('distancias', data)
-
     resp = make_response(render_template(
         'index.html',
         option_a=option_a,
